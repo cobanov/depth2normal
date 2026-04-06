@@ -6,7 +6,7 @@ Convert depth map images to RGB normal maps for shading and 3D workflows.
 
 | Depth (input) | Normal map (output) |
 | --- | --- |
-| ![Depth example](assets/depth.png) | ![Normal map example](assets/normal.png) |
+| ![Depth example](https://raw.githubusercontent.com/cobanov/depth2normal/main/assets/depth.png) | ![Normal map example](https://raw.githubusercontent.com/cobanov/depth2normal/main/assets/normal.png) |
 
 ## Install
 

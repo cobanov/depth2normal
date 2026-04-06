@@ -99,6 +99,17 @@ class TestLoadDepth:
         arr = load_depth(path)
         assert arr.ndim == 2
 
+    def test_preserves_16bit_grayscale_depth(self, tmp_path: Path):
+        data = np.array([[0, 256, 1024, 4096, 65535]], dtype=np.uint16)
+        path = tmp_path / "depth16.png"
+        Image.fromarray(data).save(path)
+
+        arr = load_depth(path)
+
+        assert arr.shape == data.shape
+        assert arr.dtype == np.float64
+        np.testing.assert_array_equal(arr, data.astype(np.float64))
+
 
 class TestConvert:
     def test_file_to_file_roundtrip(self, tmp_path: Path):

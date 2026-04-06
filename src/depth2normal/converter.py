@@ -92,12 +92,14 @@ def depth_to_normal(
 def load_depth(path: str | Path) -> NDArray[np.floating]:
     """Load an image file as a 2-D float64 depth array.
 
-    Multichannel images are converted to grayscale.
+    Preserve native single-channel grayscale depth formats such as 8-bit,
+    16-bit, and floating-point images. Multichannel images are converted
+    to grayscale.
     """
-    img = Image.open(path)
-    if img.mode != "L":
-        img = img.convert("L")
-    return np.asarray(img, dtype=np.float64)
+    with Image.open(path) as img:
+        if len(img.getbands()) != 1 or img.mode == "P":
+            img = img.convert("L")
+        return np.asarray(img, dtype=np.float64)
 
 
 def convert(
