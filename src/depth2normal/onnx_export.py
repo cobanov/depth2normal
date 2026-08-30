@@ -24,6 +24,10 @@ if TYPE_CHECKING:  # pragma: no cover - import only for type checkers
 
 DEFAULT_OPSET = 17
 
+#: The graph needs nothing newer, and older runtimes (ONNX Runtime 1.22 and
+#: before) refuse anything above this.  Newer ones still accept it.
+IR_VERSION = 10
+
 _MISSING_ONNX = (
     "The ONNX export needs the 'onnx' package: pip install 'depth2normal[onnx]'"
 )
@@ -126,6 +130,7 @@ def build_model(
         producer_name="depth2normal",
         opset_imports=[helper.make_opsetid("", opset)],
     )
+    model.ir_version = IR_VERSION
     model.metadata_props.add(key="method", value=method)
     model.metadata_props.add(key="sigma", value=str(sigma))
     model.metadata_props.add(key="depth_range", value="0-255")

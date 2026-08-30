@@ -117,9 +117,14 @@ def _load_session() -> Any:
             import onnxruntime as ort
         except ModuleNotFoundError as exc:  # pragma: no cover - depends on install
             raise ModuleNotFoundError(_MISSING_RUNTIME) from exc
-        _session = ort.InferenceSession(
-            str(ensure_model()), providers=["CPUExecutionProvider"]
-        )
+        # CUDA when onnxruntime-gpu is installed, the CPU otherwise.
+        available = ort.get_available_providers()
+        providers = [
+            name
+            for name in ("CUDAExecutionProvider", "CPUExecutionProvider")
+            if name in available
+        ]
+        _session = ort.InferenceSession(str(ensure_model()), providers=providers)
     return _session
 
 

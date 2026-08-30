@@ -80,3 +80,12 @@ def test_correlate1d_reflects_at_the_border():
     # Reflect padding mirrors without repeating the edge: 2 | 1 2 3 4 | 3
     assert smoothed[0, 0] == pytest.approx(2.0 + 1.0 + 2.0)
     assert smoothed[0, -1] == pytest.approx(3.0 + 4.0 + 3.0)
+
+
+@pytest.mark.parametrize("method", METHODS)
+def test_every_method_reads_the_true_slope(method):
+    """Normalised kernels, so a ramp of 3 per pixel reads as 3 everywhere."""
+    _, x = np.mgrid[0:32, 0:32]
+    dx, dy = gradients(x * 3.0, method)
+    assert dx[16, 16] == pytest.approx(3.0, abs=1e-3)
+    assert dy[16, 16] == pytest.approx(0.0, abs=1e-9)

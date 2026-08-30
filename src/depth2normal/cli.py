@@ -98,6 +98,12 @@ def cli() -> None:
     help="Flip near and far, for depth maps where bright means far.",
 )
 @click.option(
+    "--focal",
+    type=float,
+    help="Focal length in pixels. Treats the depth as metric distance from a "
+    "pinhole camera and returns the 3-D surface normals.",
+)
+@click.option(
     "--estimate",
     "estimate",
     is_flag=True,
@@ -116,6 +122,7 @@ def convert(
     sigma: float,
     depth_range: str,
     invert: bool,
+    focal: float | None,
     estimate: bool,
     save_depth: str | None,
 ) -> None:
@@ -138,6 +145,7 @@ def convert(
         sigma=sigma,
         depth_range=depth_range,
         invert=invert,
+        focal=focal,
     )
     Image.fromarray(normal, mode="RGB").save(output)
     click.echo(f"Normal map saved to {output}")

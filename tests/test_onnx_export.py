@@ -75,6 +75,12 @@ def test_records_its_own_settings(tmp_path):
     assert metadata["depth_range"] == "0-255"
 
 
+def test_stays_on_an_ir_version_old_runtimes_accept(tmp_path):
+    """ONNX Runtime 1.22 and earlier refuse anything above IR version 10."""
+    model = onnx.load(export_onnx(tmp_path / "ir.onnx"))
+    assert model.ir_version <= 10
+
+
 def test_rejects_unknown_method(tmp_path):
     with pytest.raises(ValueError, match="Unknown method"):
         export_onnx(tmp_path / "bad.onnx", method="nope")
