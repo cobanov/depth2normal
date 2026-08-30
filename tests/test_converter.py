@@ -8,7 +8,13 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from depth2normal import METHODS, convert, depth_to_normal, load_depth
+from depth2normal import (
+    METHODS,
+    convert,
+    depth_to_normal,
+    load_depth,
+    rescale_depth,
+)
 
 
 class TestDepthToNormal:
@@ -145,3 +151,88 @@ class TestConvert:
         convert(in_path, out_path, method=method)
 
         assert out_path.exists()
+
+
+class TestDepthRange:
+    @staticmethod
+    def _surface() -> np.ndarray:
+        y, x = np.mgrid[0:64, 0:64]
+        return (np.sin(x / 8.0) + np.cos(y / 11.0) + 2) / 4
+
+    def test_scaling_the_input_does_not_change_the_result(self):
+        """The same surface at 8-bit and 16-bit scale must agree exactly."""
+        surface = self._surface()
+        eight_bit = depth_to_normal(surface * 255, strength=3.0)
+        sixteen_bit = depth_to_normal(surface * 65535, strength=3.0)
+        np.testing.assert_array_equal(eight_bit, sixteen_bit)
+
+    def test_float_zero_to_one_matches_eight_bit(self):
+        surface = self._surface()
+        np.testing.assert_array_equal(
+            depth_to_normal(surface, strength=2.0),
+            depth_to_normal(surface * 255, strength=2.0),
+        )
+
+    def test_quantized_sixteen_bit_tracks_eight_bit(self):
+        """What is left between real 8-bit and 16-bit files is quantization."""
+        surface = self._surface()
+        difference = np.abs(
+            depth_to_normal(np.round(surface * 255), strength=3.0).astype(int)
+            - depth_to_normal(np.round(surface * 65535), strength=3.0).astype(int)
+        )
+        assert difference.mean() < 2
+
+    def test_raw_range_keeps_the_old_behaviour(self):
+        depth = np.linspace(0, 65535, 64 * 64).reshape(64, 64)
+        scaled = depth_to_normal(depth, depth_range="raw")
+        normalized = depth_to_normal(depth, depth_range="auto")
+        assert not np.array_equal(scaled, normalized)
+
+    def test_minmax_stretches_a_low_contrast_map(self):
+        depth = np.linspace(100, 120, 64 * 64).reshape(64, 64)
+        stretched = rescale_depth(depth, "minmax")
+        assert stretched.min() == pytest.approx(0.0)
+        assert stretched.max() == pytest.approx(255.0)
+
+    def test_invert_flips_the_gradient_sign(self):
+        y, x = np.mgrid[0:32, 0:32]
+        depth = (x * 4).astype(np.float64)
+        straight = depth_to_normal(depth, strength=2.0)
+        flipped = depth_to_normal(depth, strength=2.0, invert=True)
+        assert straight[16, 16, 0] != flipped[16, 16, 0]
+        assert straight[16, 16, 0] + flipped[16, 16, 0] == pytest.approx(254, abs=2)
+
+    def test_rejects_unknown_range(self):
+        with pytest.raises(ValueError, match="Unknown range"):
+            rescale_depth(np.zeros((8, 8)), "nope")
+
+
+class TestConvertFiles:
+    def test_sixteen_bit_file_matches_eight_bit_file(self, tmp_path: Path):
+        """The bug 2.0 fixes, end to end through real files."""
+        y, x = np.mgrid[0:64, 0:64]
+        surface = (np.sin(x / 9.0) + np.cos(y / 13.0) + 2) / 4
+
+        eight = tmp_path / "depth8.png"
+        sixteen = tmp_path / "depth16.png"
+        Image.fromarray(np.round(surface * 255).astype(np.uint8), mode="L").save(eight)
+        Image.fromarray(np.round(surface * 65535).astype(np.uint16)).save(sixteen)
+
+        convert(eight, tmp_path / "from8.png", strength=3.0)
+        convert(sixteen, tmp_path / "from16.png", strength=3.0)
+
+        from_eight = np.asarray(Image.open(tmp_path / "from8.png"), dtype=int)
+        from_sixteen = np.asarray(Image.open(tmp_path / "from16.png"), dtype=int)
+        assert np.abs(from_eight - from_sixteen).mean() < 2
+
+    def test_convert_passes_range_and_invert_through(self, tmp_path: Path):
+        depth_arr = np.random.default_rng(6).integers(0, 255, (32, 32), dtype=np.uint8)
+        in_path = tmp_path / "depth.png"
+        Image.fromarray(depth_arr, mode="L").save(in_path)
+
+        convert(in_path, tmp_path / "plain.png")
+        convert(in_path, tmp_path / "flipped.png", invert=True, depth_range="minmax")
+
+        plain = np.asarray(Image.open(tmp_path / "plain.png"))
+        flipped = np.asarray(Image.open(tmp_path / "flipped.png"))
+        assert not np.array_equal(plain, flipped)
