@@ -225,6 +225,7 @@ uv run pytest
 uv run ruff check .
 uv run ruff format --check .
 uv run python tools/build_web_models.py
+wrangler pages deploy web --project-name depth2normal   # the demo
 ```
 
 ## Licence
