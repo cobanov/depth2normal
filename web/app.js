@@ -22,7 +22,9 @@ const ui = {
   sample: el("sample"),
   source: el("source"),
   sourceLabel: el("source-label"),
+  sourceMeta: el("source-meta"),
   output: el("output"),
+  outputMeta: el("output-meta"),
   controls: el("controls"),
   method: el("method"),
   strength: el("strength"),
@@ -39,13 +41,14 @@ const conversionSessions = new Map();
 let depthSession = null;
 let state = { depth: null, photo: null };
 
-const status = (text) => {
+const status = (text, busy = false) => {
   ui.status.textContent = text;
+  ui.status.dataset.busy = String(busy);
 };
 
 async function conversionSession(name) {
   if (!conversionSessions.has(name)) {
-    status(`Loading ${name}.onnx`);
+    status(`Loading ${name}.onnx`, true);
     conversionSessions.set(
       name,
       await ort.InferenceSession.create(`models/${name}.onnx`),
@@ -166,13 +169,15 @@ async function render() {
     image.data.set([rgb[i * 3], rgb[i * 3 + 1], rgb[i * 3 + 2], 255], i * 4);
   }
   paint(ui.output, image);
-  status(`${width} x ${height}, converted in ${elapsed} ms`);
+  ui.sourceMeta.textContent = `${width} \u00d7 ${height}`;
+  ui.outputMeta.textContent = `${elapsed} ms`;
+  status("");
 }
 
 async function loadDepthSession() {
   if (depthSession) return depthSession;
 
-  status("Downloading the depth model (27 MB, once)");
+  status("Downloading the depth model (27 MB, once)", true);
   const response = await fetch(DEPTH_MODEL_URL);
   if (!response.ok) throw new Error(`model download failed: ${response.status}`);
 
@@ -185,7 +190,10 @@ async function loadDepthSession() {
     if (done) break;
     chunks.push(value);
     received += value.length;
-    status(`Downloading the depth model: ${Math.round((100 * received) / total)}%`);
+    status(
+      `Downloading the depth model: ${Math.round((100 * received) / total)}%`,
+      true,
+    );
   }
 
   const bytes = new Uint8Array(received);
@@ -194,7 +202,7 @@ async function loadDepthSession() {
     bytes.set(chunk, at);
     at += chunk.length;
   }
-  status("Starting the depth model");
+  status("Starting the depth model", true);
   depthSession = await ort.InferenceSession.create(bytes);
   return depthSession;
 }
@@ -231,7 +239,7 @@ async function estimate() {
       }
     }
 
-    status("Estimating depth");
+    status("Estimating depth", true);
     const started = performance.now();
     const results = await session.run({
       pixel_values: new ort.Tensor("float32", input, [1, 3, height, width]),
@@ -259,7 +267,7 @@ async function estimate() {
     target.drawImage(source, 0, 0, scaled.width, scaled.height);
 
     state.depth = toDepth(pixelsOf(scaled));
-    ui.sourceLabel.textContent = "Depth (estimated)";
+    ui.sourceLabel.textContent = "Depth, estimated";
     await render();
     status(`Depth estimated in ${elapsed} ms`);
   } catch (error) {
@@ -334,5 +342,7 @@ ui.reset.addEventListener("click", () => {
   ui.stage.classList.add("empty");
   ui.controls.hidden = true;
   ui.file.value = "";
+  ui.sourceMeta.textContent = "";
+  ui.outputMeta.textContent = "";
   status("");
 });

@@ -1,0 +1,34 @@
+# Cloudflare Pages caches assets for four hours by default, which is fine for
+# pictures and wrong for the two files that carry the page's behaviour: a
+# redeploy has to reach people who already have the old copy.
+/index.html
+  Cache-Control: no-cache, must-revalidate
+
+/style.css
+  Cache-Control: no-cache, must-revalidate
+
+/app.js
+  Cache-Control: no-cache, must-revalidate
+
+# The graphs are regenerated whenever the kernels change, under the same names.
+/models/*
+  Cache-Control: no-cache, must-revalidate
+
+# These two only ever change on purpose.
+/assets/*
+  Cache-Control: public, max-age=604800
+
+/sample-depth.png
+  Cache-Control: public, max-age=604800
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  X-Frame-Options: SAMEORIGIN
+  Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=(), usb=()
+  # Everything the page runs is either its own or from one of three hosts:
+  # jsdelivr for ONNX Runtime and its WebAssembly, Google Fonts for the two
+  # typefaces, and Hugging Face for the depth model, fetched only when the
+  # visitor asks for depth estimation. Nothing is ever sent anywhere: there is
+  # no form action and no endpoint to post an image to.
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; worker-src 'self' blob:; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self' https://cdn.jsdelivr.net https://huggingface.co https://*.hf.co; form-action 'none'; frame-ancestors 'self'; base-uri 'none'; object-src 'none'
