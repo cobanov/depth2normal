@@ -23,9 +23,14 @@ Method = Literal["gaussian", "sobel", "scharr"]
 #: How many standard deviations the Gaussian kernel covers before it is cut.
 GAUSSIAN_TRUNCATE = 4.0
 
-_SOBEL_DERIVATIVE = np.array([-1.0, 0.0, 1.0])
-_SOBEL_SMOOTHING = np.array([1.0, 2.0, 1.0])
-_SCHARR_SMOOTHING = np.array([3.0, 10.0, 3.0])
+# Normalised so every method estimates the actual derivative: the smoothing
+# taps sum to 1 and the derivative taps are a central difference.  A ramp of
+# one unit per pixel then reads as 1 whichever method is used, which is what
+# lets `strength` mean the same thing across methods and lets the perspective
+# form work in metric units.
+_SOBEL_DERIVATIVE = np.array([-1.0, 0.0, 1.0]) / 2.0
+_SOBEL_SMOOTHING = np.array([1.0, 2.0, 1.0]) / 4.0
+_SCHARR_SMOOTHING = np.array([3.0, 10.0, 3.0]) / 16.0
 
 
 def _gaussian_taps(sigma: float) -> tuple[NDArray[np.float64], NDArray[np.float64]]:

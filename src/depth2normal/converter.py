@@ -74,6 +74,30 @@ def rescale_depth(
     return rescale_depth(values, "minmax")
 
 
+def _perspective_normals(
+    depth: NDArray[np.float64],
+    dx: NDArray[np.float64],
+    dy: NDArray[np.float64],
+    focal: float,
+) -> NDArray[np.float64]:
+    """Surface normals of the 3-D points a pinhole camera would see.
+
+    Each pixel is unprojected to ``P = ((u - cx) Z / f, (v - cy) Z / f, Z)``
+    and the normal is the cross product of the two surface tangents.  As the
+    focal length grows this converges on the height field form, with the
+    relief scaled by ``f / Z``, which is what makes a metric depth map produce
+    the same surface whatever its distance from the camera.
+    """
+    height, width = depth.shape
+    v, u = np.mgrid[0:height, 0:width]
+    x = u - (width - 1) / 2.0
+    y = v - (height - 1) / 2.0
+
+    du = np.dstack(((depth + x * dx) / focal, y * dx / focal, dx))
+    dv = np.dstack((x * dy / focal, (depth + y * dy) / focal, dy))
+    return np.cross(du, dv)
+
+
 def depth_to_normal(
     depth: NDArray[np.floating],
     strength: float = 1.0,
@@ -81,6 +105,7 @@ def depth_to_normal(
     sigma: float = 1.0,
     depth_range: Range = "auto",
     invert: bool = False,
+    focal: float | None = None,
 ) -> NDArray[np.uint8]:
     """Convert a 2-D depth array to an RGB normal map.
 
@@ -96,6 +121,12 @@ def depth_to_normal(
             used when *method* is ``"gaussian"``.
         depth_range: Input scaling, see :func:`rescale_depth`.
         invert: Flip near and far before computing gradients.
+        focal: Focal length in pixels.  Given one, the depth is treated as
+            metric distance from a pinhole camera at the image centre and the
+            normals come from the unprojected 3-D surface, which is what a
+            reconstruction wants.  Left out, the depth is treated as a height
+            field, which is what a shading normal map wants.  Use it with
+            ``depth_range="raw"`` so the metric values survive.
 
     Returns:
         An (H, W, 3) uint8 RGB array where each pixel encodes the surface
@@ -111,10 +142,20 @@ def depth_to_normal(
 
     values = rescale_depth(depth, depth_range, invert)
     dx, dy = gradients(values, method, sigma)
+    dx *= strength
+    dy *= strength
 
-    normal = np.dstack((-dx * strength, -dy * strength, np.ones_like(dx)))
-    # The z component is a constant 1, so the length can never reach zero.
-    normal /= np.linalg.norm(normal, axis=2, keepdims=True)
+    if focal is None:
+        # A height field: the z component is a constant 1, so the length can
+        # never reach zero.
+        normal = np.dstack((-dx, -dy, np.ones_like(dx)))
+    else:
+        if focal <= 0:
+            raise ValueError(f"focal must be positive, got {focal}")
+        normal = _perspective_normals(values, dx, dy, focal)
+
+    length = np.linalg.norm(normal, axis=2, keepdims=True)
+    normal /= np.where(length == 0, 1, length)
 
     return ((normal + 1) * 0.5 * 255).clip(0, 255).astype(np.uint8)
 
@@ -140,6 +181,7 @@ def convert(
     sigma: float = 1.0,
     depth_range: Range = "auto",
     invert: bool = False,
+    focal: float | None = None,
 ) -> None:
     """Convert a depth map image file to a normal map image file.
 
@@ -152,6 +194,7 @@ def convert(
         sigma: Gaussian sigma (see :func:`depth_to_normal`).
         depth_range: Input scaling (see :func:`rescale_depth`).
         invert: Flip near and far (see :func:`rescale_depth`).
+        focal: Focal length in pixels (see :func:`depth_to_normal`).
     """
     depth = load_depth(input_path)
     normal = depth_to_normal(
@@ -161,5 +204,6 @@ def convert(
         sigma=sigma,
         depth_range=depth_range,
         invert=invert,
+        focal=focal,
     )
     Image.fromarray(normal, mode="RGB").save(output_path)

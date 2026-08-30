@@ -236,3 +236,62 @@ class TestConvertFiles:
         plain = np.asarray(Image.open(tmp_path / "plain.png"))
         flipped = np.asarray(Image.open(tmp_path / "flipped.png"))
         assert not np.array_equal(plain, flipped)
+
+
+class TestPerspective:
+    """With a focal length, the normals are those of the 3-D surface."""
+
+    FOCAL = 500.0
+
+    @staticmethod
+    def _plane_depth(normal: tuple[float, float, float], focal: float, distance=5.0):
+        """Depth of the plane `a X + b Y + c Z = distance`, seen by a pinhole."""
+        a, b, c = normal
+        height, width = 120, 160
+        v, u = np.mgrid[0:height, 0:width]
+        x = u - (width - 1) / 2.0
+        y = v - (height - 1) / 2.0
+        return distance / (a * x / focal + b * y / focal + c)
+
+    @staticmethod
+    def _decode(image: np.ndarray) -> np.ndarray:
+        vectors = image[10:-10, 10:-10].astype(np.float64) / 127.5 - 1.0
+        mean = vectors.reshape(-1, 3).mean(axis=0)
+        return mean / np.linalg.norm(mean)
+
+    @pytest.mark.parametrize("method", METHODS)
+    @pytest.mark.parametrize("plane", [(0, 0, 1), (0.3, 0, 1), (0.2, -0.4, 1)])
+    def test_recovers_an_analytic_plane(self, method, plane):
+        depth = self._plane_depth(plane, self.FOCAL)
+        image = depth_to_normal(
+            depth, method=method, depth_range="raw", focal=self.FOCAL
+        )
+        truth = np.array(plane, dtype=np.float64)
+        truth /= np.linalg.norm(truth)
+        assert self._decode(image) @ truth > 0.999
+
+    def test_distance_does_not_change_the_normal(self):
+        """The same plane twice as far away has the same orientation."""
+        near = self._plane_depth((0.3, -0.2, 1), self.FOCAL, distance=4.0)
+        far = self._plane_depth((0.3, -0.2, 1), self.FOCAL, distance=8.0)
+        assert (
+            self._decode(depth_to_normal(near, depth_range="raw", focal=self.FOCAL))
+            @ self._decode(depth_to_normal(far, depth_range="raw", focal=self.FOCAL))
+            > 0.999
+        )
+
+    def test_long_focal_approaches_the_height_field(self):
+        """A distant camera sees a height field, with the relief scaled f / Z."""
+        rng = np.random.default_rng(11)
+        distance, focal = 100.0, 1e6
+        depth = distance + rng.random((64, 64)) * 0.2
+        perspective = depth_to_normal(depth, depth_range="raw", focal=focal)
+        height_field = depth_to_normal(
+            depth, depth_range="raw", strength=focal / distance
+        )
+        difference = np.abs(perspective.astype(int) - height_field.astype(int))
+        assert difference.mean() < 1
+
+    def test_rejects_a_non_positive_focal(self):
+        with pytest.raises(ValueError, match="focal must be positive"):
+            depth_to_normal(np.ones((8, 8)), focal=0.0)
