@@ -4,13 +4,21 @@ build-backend = "hatchling.build"
 
 [project]
 name = "depth2normal"
-version = "1.0.0"
-description = "Convert depth map images to normal map images"
+version = "2.0.0"
+description = "Convert depth maps to normal maps, from a photo if you have no depth map"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [{ name = "Mert Cobanov" }]
-keywords = ["depth-map", "normal-map", "3d", "computer-vision", "image-processing"]
+keywords = [
+    "depth-map",
+    "normal-map",
+    "3d",
+    "computer-vision",
+    "image-processing",
+    "onnx",
+    "depth-estimation",
+]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -22,6 +30,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Multimedia :: Graphics",
     "Topic :: Scientific/Engineering :: Image Processing",
     "Typing :: Typed",
@@ -29,9 +38,16 @@ classifiers = [
 dependencies = [
     "numpy",
     "Pillow",
-    "scipy",
     "click",
 ]
+
+[project.optional-dependencies]
+# Export the conversion as a standalone ONNX graph.
+onnx = ["onnx"]
+# Estimate a depth map from a photo with Depth Anything V2 Small.
+# ONNX Runtime stopped publishing wheels for Python 3.10, so estimation needs 3.11.
+estimate = ["onnxruntime>=1.20; python_version >= '3.11'"]
+all = ["onnx", "onnxruntime>=1.20; python_version >= '3.11'"]
 
 [project.scripts]
 depth2normal = "depth2normal.cli:cli"
@@ -53,6 +69,8 @@ testpaths = ["tests"]
 
 [dependency-groups]
 dev = [
+    "onnx",
+    "onnxruntime>=1.20; python_version >= '3.11'",
     "pytest",
     "ruff",
 ]

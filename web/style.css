@@ -1,0 +1,253 @@
+:root {
+  --bg: #0b0b0d;
+  --panel: #131317;
+  --border: #26262e;
+  --text: #e7e7ea;
+  --muted: #8b8b96;
+  --accent: #8c8cff;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 3rem 1.5rem 4rem;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+header,
+main,
+footer {
+  width: min(1100px, 100%);
+}
+
+h1 {
+  margin: 0;
+  font: 600 1.6rem/1 var(--mono);
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  max-width: 60ch;
+  margin: 0.75rem 0 1rem;
+  color: var(--muted);
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+}
+
+nav a {
+  color: var(--accent);
+}
+
+nav code {
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+}
+
+main {
+  margin-top: 2rem;
+  display: grid;
+  gap: 1.5rem;
+}
+
+#stage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  min-height: 320px;
+}
+
+#stage.empty {
+  grid-template-columns: 1fr;
+}
+
+#stage.empty .panel {
+  display: none;
+}
+
+#stage:not(.empty) #dropzone {
+  display: none;
+}
+
+#dropzone {
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  padding: 3rem 1rem;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+#dropzone.over {
+  border-color: var(--accent);
+  background: #14141c;
+}
+
+.drop-title {
+  margin: 0 0 0.5rem;
+  font-family: var(--mono);
+  font-size: 1rem;
+}
+
+.drop-hint {
+  margin: 0.25rem 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.panel {
+  margin: 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+figcaption {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+canvas {
+  width: 100%;
+  height: auto;
+  max-height: 62vh;
+  object-fit: contain;
+  border-radius: 6px;
+  background: transparent;
+  image-rendering: auto;
+}
+
+#controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1rem 1.5rem;
+  align-items: end;
+  padding: 1.25rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+label {
+  display: grid;
+  gap: 0.4rem;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+label.checkbox {
+  grid-auto-flow: column;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+select,
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+select {
+  background: #0f0f14;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.4rem 0.5rem;
+  font: inherit;
+}
+
+output {
+  color: var(--text);
+}
+
+.actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+button {
+  font: 0.85rem var(--mono);
+  color: var(--text);
+  background: #1b1b22;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0b0b0d;
+  font-weight: 600;
+}
+
+button.link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+#status {
+  margin: 0;
+  min-height: 1.6em;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+footer p {
+  color: var(--muted);
+  font-size: 0.85rem;
+  max-width: 70ch;
+  border-top: 1px solid var(--border);
+  padding-top: 1.5rem;
+}
+
+@media (max-width: 720px) {
+  #stage {
+    grid-template-columns: 1fr;
+  }
+}

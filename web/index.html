@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>depth2normal</title>
+    <meta
+      name="description"
+      content="Turn a depth map into a normal map in your browser. No upload, no server."
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>depth2normal</h1>
+      <p class="tagline">
+        A depth map goes in, a normal map comes out. Runs entirely in this tab:
+        the ONNX graph below is 1.7 KB and your image never leaves the browser.
+      </p>
+      <nav>
+        <a href="https://github.com/cobanov/depth2normal">GitHub</a>
+        <code>pip install depth2normal</code>
+      </nav>
+    </header>
+
+    <main>
+      <section id="stage" class="empty">
+        <div id="dropzone">
+          <p class="drop-title">Drop a depth map here</p>
+          <p class="drop-hint">
+            or <button type="button" id="pick" class="link">choose a file</button>,
+            or <button type="button" id="sample" class="link">use the sample</button>
+          </p>
+          <p class="drop-hint">A photograph works too: its depth can be estimated.</p>
+          <input id="file" type="file" accept="image/*" hidden />
+        </div>
+
+        <figure class="panel" id="source-panel">
+          <figcaption><span id="source-label">Depth</span></figcaption>
+          <canvas id="source"></canvas>
+        </figure>
+
+        <figure class="panel">
+          <figcaption>Normal</figcaption>
+          <canvas id="output"></canvas>
+        </figure>
+      </section>
+
+      <aside id="controls" hidden>
+        <label>
+          <span>Method</span>
+          <select id="method">
+            <option value="gaussian-1">gaussian, sigma 1</option>
+            <option value="gaussian-0.5">gaussian, sigma 0.5</option>
+            <option value="gaussian-2">gaussian, sigma 2</option>
+            <option value="gaussian-3">gaussian, sigma 3</option>
+            <option value="sobel">sobel</option>
+            <option value="scharr">scharr</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Strength <output id="strength-value">1.0</output></span>
+          <input id="strength" type="range" min="0.1" max="10" step="0.1" value="1" />
+        </label>
+
+        <label>
+          <span>Depth range</span>
+          <select id="range">
+            <option value="auto">auto</option>
+            <option value="minmax">minmax</option>
+            <option value="raw">raw</option>
+          </select>
+        </label>
+
+        <label class="checkbox">
+          <input id="invert" type="checkbox" />
+          <span>Invert (bright means far)</span>
+        </label>
+
+        <div class="actions">
+          <button type="button" id="estimate">Estimate depth from photo</button>
+          <button type="button" id="download" class="primary">Download PNG</button>
+          <button type="button" id="reset" class="link">Start over</button>
+        </div>
+      </aside>
+
+      <p id="status" role="status"></p>
+    </main>
+
+    <footer>
+      <p>
+        Depth estimation, when you ask for it, downloads Depth Anything V2 Small
+        (27 MB, Apache-2.0) from Hugging Face and runs it here as well. Nothing
+        is uploaded either way.
+      </p>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
