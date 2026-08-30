@@ -1,25 +1,9 @@
-# Cloudflare Pages caches assets for four hours by default, which is fine for
-# pictures and wrong for the two files that carry the page's behaviour: a
-# redeploy has to reach people who already have the old copy.
-/index.html
-  Cache-Control: no-cache, must-revalidate
-
-/style.css
-  Cache-Control: no-cache, must-revalidate
-
-/app.js
-  Cache-Control: no-cache, must-revalidate
-
-# The graphs are regenerated whenever the kernels change, under the same names.
-/models/*
-  Cache-Control: no-cache, must-revalidate
-
-# These two only ever change on purpose.
-/assets/*
-  Cache-Control: public, max-age=604800
-
-/sample-depth.png
-  Cache-Control: public, max-age=604800
+# Cloudflare Pages serves static assets with `max-age=14400` and ignores any
+# Cache-Control set here, which was measured rather than assumed: the CSP below
+# arrives on every response, the cache header does not. So the lever for
+# style.css and app.js is the version query on their links in index.html, which
+# is bumped whenever either file changes. index.html itself is served with
+# max-age=0, so a bumped query is picked up on the next visit.
 
 /*
   X-Content-Type-Options: nosniff
