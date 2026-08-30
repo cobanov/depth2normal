@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/hero.webp" alt="A Mars photograph next to the normal map depth2normal produced from it" width="700">
+  <img src="https://raw.githubusercontent.com/cobanov/depth2normal/main/assets/hero.webp" alt="A Mars photograph next to the normal map depth2normal produced from it" width="700">
 </p>
 
 <p align="center">
@@ -10,9 +10,9 @@
 <p align="center">
   <a href="https://pypi.org/project/depth2normal/"><img alt="pypi" src="https://img.shields.io/pypi/v/depth2normal?color=8c8cff&labelColor=1a1a1a"></a>
   <a href="https://github.com/cobanov/depth2normal/actions/workflows/ci.yml"><img alt="ci" src="https://img.shields.io/github/actions/workflow/status/cobanov/depth2normal/ci.yml?branch=main&color=8c8cff&labelColor=1a1a1a"></a>
-  <img alt="tests" src="https://img.shields.io/badge/tests-71-8c8cff?labelColor=1a1a1a">
+  <img alt="tests" src="https://img.shields.io/badge/tests-87-8c8cff?labelColor=1a1a1a">
   <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-8c8cff?labelColor=1a1a1a">
-  <a href="LICENSE"><img alt="licence" src="https://img.shields.io/badge/licence-MIT-8c8cff?labelColor=1a1a1a"></a>
+  <a href="https://github.com/cobanov/depth2normal/blob/main/LICENSE"><img alt="licence" src="https://img.shields.io/badge/licence-MIT-8c8cff?labelColor=1a1a1a"></a>
 </p>
 
 ---
@@ -85,7 +85,7 @@ depth2normal.export_onnx("depth2normal.onnx")        # needs [onnx]
 ## From a photo
 
 <p align="center">
-  <img src="assets/pipeline.webp" alt="A photograph, the depth map estimated from it, and the resulting normal map" width="700">
+  <img src="https://raw.githubusercontent.com/cobanov/depth2normal/main/assets/pipeline.webp" alt="A photograph, the depth map estimated from it, and the resulting normal map" width="700">
 </p>
 
 `--estimate` runs [Depth Anything V2 Small](https://huggingface.co/onnx-community/depth-anything-v2-small)
@@ -231,4 +231,4 @@ wrangler pages deploy web --project-name depth2normal   # the demo
 ## Licence
 
 MIT. The depth model is Apache-2.0 and is downloaded, not vendored. Image
-credits are in [assets/CREDITS.md](assets/CREDITS.md).
+credits are in [assets/CREDITS.md](https://github.com/cobanov/depth2normal/blob/main/assets/CREDITS.md).

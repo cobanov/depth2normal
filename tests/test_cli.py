@@ -59,6 +59,9 @@ def test_export_writes_a_model(tmp_path):
 
 
 def test_version_flag():
+    """The CLI reports the installed version, whatever it is."""
+    from importlib.metadata import version
+
     result = CliRunner().invoke(cli, ["--version"])
     assert result.exit_code == 0
-    assert "2.0.0" in result.output
+    assert version("depth2normal") in result.output
