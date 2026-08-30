@@ -10,9 +10,10 @@
   Referrer-Policy: no-referrer
   X-Frame-Options: SAMEORIGIN
   Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=(), usb=()
-  # Everything the page runs is either its own or from one of three hosts:
+  # Everything the page runs is either its own or from one of four hosts:
   # jsdelivr for ONNX Runtime and its WebAssembly, Google Fonts for the two
-  # typefaces, and Hugging Face for the depth model, fetched only when the
-  # visitor asks for depth estimation. Nothing is ever sent anywhere: there is
-  # no form action and no endpoint to post an image to.
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; worker-src 'self' blob:; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self' https://cdn.jsdelivr.net https://huggingface.co https://*.hf.co; form-action 'none'; frame-ancestors 'self'; base-uri 'none'; object-src 'none'
+  # typefaces, Hugging Face for the depth model, fetched only when the visitor
+  # asks for depth estimation, and the self-hosted visit counter. The image
+  # itself is never sent anywhere: there is no form action, and the counter
+  # is the only endpoint the page can reach at all.
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://oa-c.cobanov.run; worker-src 'self' blob:; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self' https://cdn.jsdelivr.net https://huggingface.co https://*.hf.co https://oa-c.cobanov.run; form-action 'none'; frame-ancestors 'self'; base-uri 'none'; object-src 'none'
