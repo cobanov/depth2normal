@@ -46,7 +46,9 @@ pip install 'depth2normal[all]'       # plus ONNX export and depth estimation
 
 `uv add depth2normal` works the same way. The extras are separable:
 `[onnx]` pulls in `onnx` for the export, `[estimate]` pulls in `onnxruntime`
-for depth estimation.
+for depth estimation. The converter itself runs on Python 3.10, but ONNX
+Runtime stopped publishing 3.10 wheels, so depth estimation needs 3.11 or
+newer.
 
 ## Use
 

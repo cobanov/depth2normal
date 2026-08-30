@@ -38,7 +38,8 @@ IMAGE_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 IMAGE_STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
 _MISSING_RUNTIME = (
-    "Depth estimation needs ONNX Runtime: pip install 'depth2normal[estimate]'"
+    "Depth estimation needs ONNX Runtime: pip install 'depth2normal[estimate]'\n"
+    "ONNX Runtime publishes no wheels for Python 3.10, so this needs 3.11 or newer."
 )
 
 _session: Any = None
