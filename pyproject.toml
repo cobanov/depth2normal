@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "depth2normal"
-version = "2.0.0"
+version = "2.0.1"
 description = "Convert depth maps to normal maps, from a photo if you have no depth map"
 readme = "README.md"
 license = "MIT"
@@ -53,9 +53,10 @@ all = ["onnx", "onnxruntime>=1.20; python_version >= '3.11'"]
 depth2normal = "depth2normal.cli:cli"
 
 [project.urls]
-Homepage = "https://github.com/cobanov/depth2normal"
+Homepage = "https://depth2normal.cobanov.dev"
 Repository = "https://github.com/cobanov/depth2normal"
 Issues = "https://github.com/cobanov/depth2normal/issues"
+Changelog = "https://github.com/cobanov/depth2normal/releases"
 
 [tool.ruff]
 target-version = "py310"

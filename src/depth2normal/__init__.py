@@ -11,7 +11,7 @@ from depth2normal.converter import (
 from depth2normal.estimate import estimate_depth
 from depth2normal.onnx_export import build_model, export_onnx
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 __all__ = [
     "METHODS",
     "RANGES",
