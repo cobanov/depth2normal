@@ -13,7 +13,8 @@
   # Everything the page runs is either its own or from one of four hosts:
   # jsdelivr for ONNX Runtime and its WebAssembly, Google Fonts for the two
   # typefaces, Hugging Face for the depth model, fetched only when the visitor
-  # asks for depth estimation, and the self-hosted visit counter. The image
-  # itself is never sent anywhere: there is no form action, and the counter
-  # is the only endpoint the page can reach at all.
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://oa-c.cobanov.run; worker-src 'self' blob:; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self' https://cdn.jsdelivr.net https://huggingface.co https://*.hf.co https://oa-c.cobanov.run; form-action 'none'; frame-ancestors 'self'; base-uri 'none'; object-src 'none'
+  # asks for depth estimation, the self-hosted visit counter, and Cloudflare's
+  # beacon, which reports to this origin. The image itself is never sent
+  # anywhere: there is no form action, and the counter is the only outside
+  # endpoint the page can reach at all.
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://oa-c.cobanov.run https://static.cloudflareinsights.com; worker-src 'self' blob:; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self' https://cdn.jsdelivr.net https://huggingface.co https://*.hf.co https://oa-c.cobanov.run; form-action 'none'; frame-ancestors 'self'; base-uri 'none'; object-src 'none'
